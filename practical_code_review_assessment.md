@@ -92,6 +92,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 ### Authentication
 
 **High**
+```
 /admin/login/	django.contrib.admin.sites.login	admin:login
 /admin/logout/	django.contrib.admin.sites.logout	admin:logout
 /admin/password_change/	django.contrib.admin.sites.password_change	admin:password_change
@@ -113,6 +114,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/authtoken/tokenproxy/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:authtoken_tokenproxy_delete
 /admin/authtoken/tokenproxy/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:authtoken_tokenproxy_history
 /admin/authtoken/tokenproxy/add/	django.contrib.admin.options.add_view	admin:authtoken_tokenproxy_add
+```
 
 ### Authorization
 
