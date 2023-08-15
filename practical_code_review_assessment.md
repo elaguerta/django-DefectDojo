@@ -221,7 +221,31 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
   - API uses a Token header / API key
 
 * Broken Access Control
-  - [ ] Insecure Direct Object Reference (`find_by`, `find`, `findOne`, `findAll`, etc)
+  - [x] Insecure Direct Object Reference (`find_by`, `find`, `findOne`, `findAll`, etc)
+    - Appears to be a mature flow to determine object existence then validate permissions
+    - ```note = get_object_or_404(Notes, id=id)
+    reverse_url = None
+    object_id = None
+
+    if page == "engagement":
+        object = get_object_or_404(Engagement, id=objid)
+        object_id = object.id
+        reverse_url = "view_engagement"
+    elif page == "test":
+        object = get_object_or_404(Test, id=objid)
+        object_id = object.id
+        reverse_url = "view_test"
+    elif page == "finding":
+        object = get_object_or_404(Finding, id=objid)
+        object_id = object.id
+        reverse_url = "view_finding"
+    form = DeleteNoteForm(request.POST, instance=note)
+
+    if page is None:
+        raise PermissionDenied
+    if str(request.user) != note.author.username:
+        user_has_permission_or_403(request.user, object, Permissions.Note_Delete)
+  ```
   - [ ] Missing Function Level Access Control
   - [ ] Verify Authorization Filters
 
