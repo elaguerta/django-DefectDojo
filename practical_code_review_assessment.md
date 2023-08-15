@@ -117,14 +117,17 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 ### Authorization
 
 **High**
+```
 /admin/dojo/fileaccesstoken/	django.contrib.admin.options.changelist_view	admin:dojo_fileaccesstoken_changelist
 /admin/dojo/fileaccesstoken/<path:object_id>/	django.views.generic.base.RedirectView	
 /admin/dojo/fileaccesstoken/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_fileaccesstoken_change
 /admin/dojo/fileaccesstoken/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_fileaccesstoken_delete
 /admin/dojo/fileaccesstoken/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_fileaccesstoken_history
 /admin/dojo/fileaccesstoken/add/	django.contrib.admin.options.add_view	admin:dojo_fileaccesstoken_add
+```
 
 **Medium**
+```
 /admin/auth/group/	django.contrib.admin.options.changelist_view	admin:auth_group_changelist
 /admin/auth/group/<path:object_id>/	django.views.generic.base.RedirectView	
 /admin/auth/group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_group_change
@@ -138,6 +141,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_user_delete
 /admin/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_user_history
 /admin/auth/user/add/	django.contrib.auth.admin.add_view	admin:auth_user_add
+```
 
 
 
