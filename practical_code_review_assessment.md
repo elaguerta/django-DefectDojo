@@ -89,6 +89,8 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 
 ### Risks
 
+Django 4.0.10 has a potential Denial of Service due to file uploads. 
+
 ### Authentication
 
 **High**
@@ -116,8 +118,61 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/authtoken/tokenproxy/add/	django.contrib.admin.options.add_view	admin:authtoken_tokenproxy_add
 ```
 
+- [x] What are the different authentication flows?
+  - [x] User Login
+        A user logs in with their username and password /admin/auth/user/add/.
+  - [x] User Registration
+        Users cannot registor. Only admins can add users via 
+  - [x] Forgot Password
+        Send an email with a reset link.
+        Implemented in https://github.com/DefectDojo/django-DefectDojo/blob/b98093dcb966ffe972f8719337de2209bf3989ec/dojo/user/urls.py#L30
+        /reset/<uidb64>/<token>/
+         
+- [x] How are users identified? What information do they have to provide?
+      Username, password, First Name, Last Name, email address
+  - [x] Username, email, password, 2fa token, etc.
+        Username and password is enabled. 
+        2fa is optionally implemented:
+          - Auth0, other providers.
+- [x] Does the application implement strong password policies?
+      - A list of password validators https://github.com/DefectDojo/django-DefectDojo/blob/b98093dcb966ffe972f8719337de2209bf3989ec/dojo/settings/settings.dist.py#L610
+      - Validators defined in https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/user/validators.py
+      
+
+* Authentication function checks
+
+- [x] Password hashing mechanism
+      Yes - https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/settings/settings.dist.py#L475
+- [x] Timing attacks - this could be username/password or HMAC operations verifying keys
+      NA - Argon 2
+- [x] Forgot Password
+      Uses default Django password reset flow which seems up-to-date and secure. `
+- [ ] 2 factor auth
+- [ ] Enumeration... if it matters
+- [ ] Signup
+- [ ] Brute force attacks
+- [ ] Session Management Issues
+  - [ ] Session Fixation
+  - [ ] Session Destruction
+  - [ ] Session Length
+
+* Is there service-to-service authentication?
+  - [ ] Constant time comparison function used
+  - [ ] HMAC generated using a secure algorithm (basically not SHA1/MD5)
+  - [ ] Requests occur over SSL/TLS
+    - [ ] Verification of SSL/TLS is not turned off
+  - [ ] Reasonable TTL implemented (meaning, an hour or less would be normal.)
+  - [ ] Accounts for time skew
+  - [ ] Shared secret used and stored in vault (not hardcoded)
+  - [ ] Unit-tests for:
+    - [ ] Check fails if token/hmac/nonce/etc. is missing or mismatched
+    - [ ] Failure if timestamp is missing or expired
+    - [ ] Failure if signature verification fails
+
+
 ### Authorization
 
+- [ ] There is a list of "login-exempt" URLs https://github.com/DefectDojo/django-DefectDojo/blob/b98093dcb966ffe972f8719337de2209bf3989ec/dojo/settings/settings.dist.py#L594
 **High**
 ```
 /admin/dojo/fileaccesstoken/	django.contrib.admin.options.changelist_view	admin:dojo_fileaccesstoken_changelist
@@ -177,6 +232,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 
 ### Cryptography
 
+Password hashing enabled with strong modern algorithms: https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/settings/settings.dist.py#L475
 ### Configuration
 
 ## Mapping / Routes
