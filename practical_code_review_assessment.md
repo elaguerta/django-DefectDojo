@@ -223,7 +223,7 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 * Broken Access Control
   - [x] Insecure Direct Object Reference (`find_by`, `find`, `findOne`, `findAll`, etc)
     - Appears to be a mature flow to determine object existence then validate permissions
-    - ```note = get_object_or_404(Notes, id=id)
+```note = get_object_or_404(Notes, id=id)
     reverse_url = None
     object_id = None
 
@@ -245,9 +245,7 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
         raise PermissionDenied
     if str(request.user) != note.author.username:
         user_has_permission_or_403(request.user, object, Permissions.Note_Delete)
-  ```
-  - [ ] Missing Function Level Access Control
-  - [ ] Verify Authorization Filters
+```
 
 * Generic authz flaws
   - [ ] Sensitive Data Exposure
