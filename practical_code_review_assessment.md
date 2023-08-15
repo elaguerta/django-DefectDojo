@@ -2,18 +2,8 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 
 # Findings
 
-## 1. SQL Injection
-
-### Description
-
-### Recommendation
-
-## 2. Insecure Direct Object Reference (IDOR)
-
-### Description
-
-
-### Recommendation
+## 1. Lack of 2FA availability
+## 2. Login rate limiting not enabled by default
 
 
 ---
