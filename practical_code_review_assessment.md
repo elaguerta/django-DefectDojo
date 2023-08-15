@@ -1638,7 +1638,4 @@ Password hashing enabled with strong modern algorithms: https://github.com/Defec
 /webhook/	dojo.jira_link.views.webhook	web_hook
 /webhook/<secret>	dojo.jira_link.views.webhook	web_hook_secret
 ```
-
-## Mapping / Authorization Decorators
-
 ## Mapping / Files
