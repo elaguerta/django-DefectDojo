@@ -155,21 +155,11 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
   - Registration not offered to normal users
 - [x] Brute force attacks
   - Has rate limiting options but disabled by default
-  -  # Enable Rate Limiting for the login page
+  -  Enable Rate Limiting for the login page
   -  DD_RATE_LIMITER_ENABLED=(bool, False),
 
 * Is there service-to-service authentication?
-  - [ ] Constant time comparison function used
-  - [ ] HMAC generated using a secure algorithm (basically not SHA1/MD5)
-  - [ ] Requests occur over SSL/TLS
-    - [ ] Verification of SSL/TLS is not turned off
-  - [ ] Reasonable TTL implemented (meaning, an hour or less would be normal.)
-  - [ ] Accounts for time skew
-  - [ ] Shared secret used and stored in vault (not hardcoded)
-  - [ ] Unit-tests for:
-    - [ ] Check fails if token/hmac/nonce/etc. is missing or mismatched
-    - [ ] Failure if timestamp is missing or expired
-    - [ ] Failure if signature verification fails
+  - Significant amount of potential service to service authentication that cannot be validated in such a short timeframe
 
 
 ### Authorization
