@@ -227,8 +227,8 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 * Generic authz flaws
   - [ ] Sensitive Data Exposure
   - [ ] Mass Assignment
-  - [ ] Business Logic Flaws
-  - [ ] Are CSRF Protections applied correctly
+  - [x] Are CSRF Protections applied correctly
+    - Webhooks are CSRF exempt but other forms seem to correctly enforce
   - [x] Are users forced to re-assert their credentials for requests that have critical side-effect (account changes, password reset, etc)?
     - Required for password reset
     - Not required to view API key
