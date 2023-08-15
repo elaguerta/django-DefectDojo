@@ -261,8 +261,6 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 	- Debug options appear disabled in prod configuration
 - [x] Are relevant user details and system actions logged?
 	- Contains a default true audit log / audit trail setting
-- [x] Is sensitive user input flagged, identified, protected, and not written to the logs?
-	- not logged
 - [x] Are unexpected errors and inputs logged?
 	- Yes there appears to be reasonable logging around errors
 
