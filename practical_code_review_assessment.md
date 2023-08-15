@@ -136,6 +136,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/auth/group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_group_delete
 /admin/auth/group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_group_history
 /admin/auth/group/add/	django.contrib.admin.options.add_view	admin:auth_group_add
+
 /admin/auth/user/	django.contrib.admin.options.changelist_view	admin:auth_user_changelist
 /admin/auth/user/<id>/password/	django.contrib.auth.admin.user_change_password	admin:auth_user_password_change
 /admin/auth/user/<path:object_id>/	django.views.generic.base.RedirectView	
@@ -143,6 +144,29 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_user_delete
 /admin/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_user_history
 /admin/auth/user/add/	django.contrib.auth.admin.add_view	admin:auth_user_add
+
+/admin/dojo/dojo_group/	django.contrib.admin.options.changelist_view	admin:dojo_dojo_group_changelist
+/admin/dojo/dojo_group/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/dojo/dojo_group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_dojo_group_change
+/admin/dojo/dojo_group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_dojo_group_delete
+/admin/dojo/dojo_group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_dojo_group_history
+/admin/dojo/dojo_group/add/	django.contrib.admin.options.add_view	admin:dojo_dojo_group_add
+/admin/dojo/dojo_group_member/	django.contrib.admin.options.changelist_view	admin:dojo_dojo_group_member_changelist
+/admin/dojo/dojo_group_member/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/dojo/dojo_group_member/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_dojo_group_member_change
+/admin/dojo/dojo_group_member/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_dojo_group_member_delete
+/admin/dojo/dojo_group_member/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_dojo_group_member_history
+/admin/dojo/dojo_group_member/add/	django.contrib.admin.options.add_view	admin:dojo_dojo_group_member_add
+
+
+/user/<uid>	dojo.user.views.view_user	view_user
+/user/<uid>/add_group_member	dojo.user.views.add_group_member	add_group_member_user
+/user/<uid>/add_product_member	dojo.user.views.add_product_member	add_product_member_user
+/user/<uid>/add_product_type_member	dojo.user.views.add_product_type_member	add_product_type_member_user
+/user/<uid>/delete	dojo.user.views.delete_user	delete_user
+/user/<uid>/edit	dojo.user.views.edit_user	edit_user
+/user/<uid>/edit_permissions	dojo.user.views.edit_permissions	edit_user_permissions
+/user/add	dojo.user.views.add_user	add_user
 ```
 
 
@@ -303,18 +327,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/dojo/development_environment/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_development_environment_delete
 /admin/dojo/development_environment/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_development_environment_history
 /admin/dojo/development_environment/add/	django.contrib.admin.options.add_view	admin:dojo_development_environment_add
-/admin/dojo/dojo_group/	django.contrib.admin.options.changelist_view	admin:dojo_dojo_group_changelist
-/admin/dojo/dojo_group/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/dojo/dojo_group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_dojo_group_change
-/admin/dojo/dojo_group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_dojo_group_delete
-/admin/dojo/dojo_group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_dojo_group_history
-/admin/dojo/dojo_group/add/	django.contrib.admin.options.add_view	admin:dojo_dojo_group_add
-/admin/dojo/dojo_group_member/	django.contrib.admin.options.changelist_view	admin:dojo_dojo_group_member_changelist
-/admin/dojo/dojo_group_member/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/dojo/dojo_group_member/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_dojo_group_member_change
-/admin/dojo/dojo_group_member/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_dojo_group_member_delete
-/admin/dojo/dojo_group_member/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_dojo_group_member_history
-/admin/dojo/dojo_group_member/add/	django.contrib.admin.options.add_view	admin:dojo_dojo_group_member_add
+
 /admin/dojo/dojometa/	django.contrib.admin.options.changelist_view	admin:dojo_dojometa_changelist
 /admin/dojo/dojometa/<path:object_id>/	django.views.generic.base.RedirectView	
 /admin/dojo/dojometa/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_dojometa_change
@@ -1506,14 +1519,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /tool_type/<ttid>/edit	dojo.tool_type.views.edit_tool_type	edit_tool_type
 /tool_type/add	dojo.tool_type.views.new_tool_type	add_tool_type
 /user	dojo.user.views.user	users
-/user/<uid>	dojo.user.views.view_user	view_user
-/user/<uid>/add_group_member	dojo.user.views.add_group_member	add_group_member_user
-/user/<uid>/add_product_member	dojo.user.views.add_product_member	add_product_member_user
-/user/<uid>/add_product_type_member	dojo.user.views.add_product_type_member	add_product_type_member_user
-/user/<uid>/delete	dojo.user.views.delete_user	delete_user
-/user/<uid>/edit	dojo.user.views.edit_user	edit_user
-/user/<uid>/edit_permissions	dojo.user.views.edit_permissions	edit_user_permissions
-/user/add	dojo.user.views.add_user	add_user
+
 /webhook/	dojo.jira_link.views.webhook	web_hook
 /webhook/<secret>	dojo.jira_link.views.webhook	web_hook_secret
 ```
