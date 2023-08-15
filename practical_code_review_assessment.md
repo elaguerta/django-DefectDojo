@@ -4,6 +4,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 
 ## 1. Lack of 2FA availability
 ## 2. Login rate limiting not enabled by default
+## 3. Admin users can obtain their API key at any time without a reconfirmation of credentials
 
 
 ---
@@ -228,7 +229,9 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
   - [ ] Mass Assignment
   - [ ] Business Logic Flaws
   - [ ] Are CSRF Protections applied correctly
-  - [ ] Are users forced to re-assert their credentials for requests that have critical side-effect (account changes, password reset, etc)?
+  - [x] Are users forced to re-assert their credentials for requests that have critical side-effect (account changes, password reset, etc)?
+    - Required for password reset
+    - Not required to view API key
 
 
 
