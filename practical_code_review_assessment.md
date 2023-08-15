@@ -5,7 +5,19 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 ## 1. Lack of 2FA availability
 ## 2. Login rate limiting not enabled by default
 ## 3. Admin users can obtain their API key at any time without a reconfirmation of credentials
+## 4. Potentially unsafe use of `|safe` in custom report templates
+## 5. Credential encryption - fails open and defaults to a None key if the setting does not exist
+```
+def get_db_key():
+    db_key = None
+    if hasattr(settings, 'DB_KEY'):
+        db_key = settings.DB_KEY
+        db_key = binascii.b2a_hex(
+            hashlib.sha256(db_key.encode('utf-8')).digest().rstrip())[:32]
 
+    return db_key
+```
+- Also uses AES w/ OFB which may have some weaknesses
 
 ---
 
@@ -265,9 +277,18 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 	- Yes there appears to be reasonable logging around errors
 
 ### Injection
+- [x] Secure Content Encoding
+	- Appears to leverage standard escape sequence with template rendering `{{ value }}`
+	- Does contain some instances of `|safe` escaping - most seem fairly innocent but requires additional information
+ - 
 
 ### Cryptography
 Password hashing enabled with strong modern algorithms: https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/settings/settings.dist.py#L475
+
+* Stored credentials are encrypted
+	- `os.urandom` to generate iv
+	- Statically configured `DB_KEY` but could be `None`
+	- AES in OFB mode which may have some weaknesses
 
 ### Configuration
 
