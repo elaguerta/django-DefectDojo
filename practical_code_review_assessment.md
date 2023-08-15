@@ -248,26 +248,29 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 ```
 
 * Generic authz flaws
-  - [ ] Sensitive Data Exposure
-  - [ ] Mass Assignment
   - [x] Are CSRF Protections applied correctly
     - Webhooks are CSRF exempt but other forms seem to correctly enforce
   - [x] Are users forced to re-assert their credentials for requests that have critical side-effect (account changes, password reset, etc)?
     - Required for password reset
     - Not required to view API key
 
-
-
-
-
-
 ### Auditing/Logging
+- [x] If an exception occurs, does the application fails securely?
+	- Heavily uses try / catch and exception raising to handle program flow
+- [x] Do error messages reveal sensitive application or unnecessary execution details?
+	- Debug options appear disabled in prod configuration
+- [x] Are relevant user details and system actions logged?
+	- Contains a default true audit log / audit trail setting
+- [x] Is sensitive user input flagged, identified, protected, and not written to the logs?
+	- not logged
+- [x] Are unexpected errors and inputs logged?
+	- Yes there appears to be reasonable logging around errors
 
 ### Injection
 
 ### Cryptography
-
 Password hashing enabled with strong modern algorithms: https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/settings/settings.dist.py#L475
+
 ### Configuration
 
 ## Mapping / Routes
