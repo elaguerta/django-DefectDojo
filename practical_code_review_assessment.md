@@ -50,6 +50,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
   -   Knowledge of architecture and known issues
   - Notes about assessments
   - Significant amount of integrations with a lot of other tooling that could expose other information
+  - Has the ability to store credentials and compromised credentials which would be a valuable target
 
 ## Tech Stack
 
