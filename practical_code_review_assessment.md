@@ -154,7 +154,10 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 
 ### Authorization
 
-- [ ] There is a list of "login-exempt" URLs https://github.com/DefectDojo/django-DefectDojo/blob/b98093dcb966ffe972f8719337de2209bf3989ec/dojo/settings/settings.dist.py#L594
+- [x] There is a list of "login-exempt" URLs https://github.com/DefectDojo/django-DefectDojo/blob/b98093dcb966ffe972f8719337de2209bf3989ec/dojo/settings/settings.dist.py#L594
+- [x] Identify Roles
+  - Done above
+- [x] Identify sensitive/privileged endpoints
 **High**
 ```
 /admin/dojo/fileaccesstoken/	django.contrib.admin.options.changelist_view	admin:dojo_fileaccesstoken_changelist
@@ -205,6 +208,29 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 /user/<uid>/edit_permissions	dojo.user.views.edit_permissions	edit_user_permissions
 /user/add	dojo.user.views.add_user	add_user
 ```
+- [ ] Identify authz expectations specific to the business purpose of the app
+  * Can non-privileged users view, add, or alter accounts?
+  * Is there functionality to add accounts with higher access levels than their own access?
+  * How is separation of duties handled?
+- [x] Identify Authorization functions/filters
+  - Uses Django user handling
+  - sessionid cookie
+  - API uses a Token header / API key
+
+* Broken Access Control
+  - [ ] Insecure Direct Object Reference (`find_by`, `find`, `findOne`, `findAll`, etc)
+  - [ ] Missing Function Level Access Control
+  - [ ] Verify Authorization Filters
+
+* Generic authz flaws
+  - [ ] Sensitive Data Exposure
+  - [ ] Mass Assignment
+  - [ ] Business Logic Flaws
+  - [ ] Are CSRF Protections applied correctly
+  - [ ] Are users forced to re-assert their credentials for requests that have critical side-effect (account changes, password reset, etc)?
+
+
+
 
 
 
