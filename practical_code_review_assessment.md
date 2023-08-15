@@ -147,14 +147,16 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
       NA - Argon 2
 - [x] Forgot Password
       Uses default Django password reset flow which seems up-to-date and secure. `
-- [ ] 2 factor auth
-- [ ] Enumeration... if it matters
-- [ ] Signup
-- [ ] Brute force attacks
-- [ ] Session Management Issues
-  - [ ] Session Fixation
-  - [ ] Session Destruction
-  - [ ] Session Length
+- [x] 2 factor auth
+  - Does not appear to support 2fa on traditional username / password
+- [x] Enumeration... if it matters
+  - Does not seem possible - provides generic error messages for login and reset flows
+- [x] Signup
+  - Registration not offered to normal users
+- [x] Brute force attacks
+  - Has rate limiting options but disabled by default
+  -  # Enable Rate Limiting for the login page
+  -  DD_RATE_LIMITER_ENABLED=(bool, False),
 
 * Is there service-to-service authentication?
   - [ ] Constant time comparison function used
