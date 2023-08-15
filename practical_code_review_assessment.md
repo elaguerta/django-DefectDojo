@@ -282,7 +282,7 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 	- Does contain some instances of `|safe` escaping - most seem fairly innocent but requires additional information
 - [x] SQL Injection
 	- Appear to use mature ORM / Django model management, do not appear to leverage explicity unsafe conventions such as `.raw`
- - [x] Using `difuzedxml` to handle XXE prevention and XML parsing in general
+ - [x] Using `defusedxml` to handle XXE prevention and XML parsing in general
 
 ### Cryptography
 Password hashing enabled with strong modern algorithms: https://github.com/DefectDojo/django-DefectDojo/blob/master/dojo/settings/settings.dist.py#L475
