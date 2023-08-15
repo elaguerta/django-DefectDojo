@@ -210,10 +210,11 @@ Django 4.0.10 has a potential Denial of Service due to file uploads.
 /user/<uid>/edit_permissions	dojo.user.views.edit_permissions	edit_user_permissions
 /user/add	dojo.user.views.add_user	add_user
 ```
-- [ ] Identify authz expectations specific to the business purpose of the app
-  * Can non-privileged users view, add, or alter accounts?
-  * Is there functionality to add accounts with higher access levels than their own access?
-  * How is separation of duties handled?
+- [x] Identify authz expectations specific to the business purpose of the app
+  - Seem to leverage decorators consistently to gate functionality
+  - `@user_is_authorized(Product, Permissions.Product_View, 'pid')`
+  - `@user_is_configuration_authorized(Permissions.Credential_Add)`
+  - Additional research needs to be doen to evaluate if any decorators are missing or if permissions can be scoped too broadly depending on user level / project access 
 - [x] Identify Authorization functions/filters
   - Uses Django user handling
   - sessionid cookie
