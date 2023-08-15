@@ -91,7 +91,55 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 
 ### Authentication
 
+**High**
+/admin/login/	django.contrib.admin.sites.login	admin:login
+/admin/logout/	django.contrib.admin.sites.logout	admin:logout
+/admin/password_change/	django.contrib.admin.sites.password_change	admin:password_change
+/admin/password_change/done/	django.contrib.admin.sites.password_change_done	admin:password_change_done
+
+/forgot_username/	dojo.user.views.DojoForgotUsernameView	forgot_username
+/forgot_username_done/	django.contrib.auth.views.PasswordResetDoneView	forgot_username_done
+
+/login	dojo.user.views.login_view	login
+/login/<str:backend>/	social_django.views.auth	social:begin
+/logout	dojo.user.views.logout_view	logout
+
+/reset/<uidb64>/<token>/	django.contrib.auth.views.PasswordResetConfirmView	password_reset_confirm
+/reset/done/	django.contrib.auth.views.PasswordResetCompleteView	password_reset_complete
+
+/admin/authtoken/tokenproxy/	django.contrib.admin.options.changelist_view	admin:authtoken_tokenproxy_changelist
+/admin/authtoken/tokenproxy/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/authtoken/tokenproxy/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:authtoken_tokenproxy_change
+/admin/authtoken/tokenproxy/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:authtoken_tokenproxy_delete
+/admin/authtoken/tokenproxy/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:authtoken_tokenproxy_history
+/admin/authtoken/tokenproxy/add/	django.contrib.admin.options.add_view	admin:authtoken_tokenproxy_add
+
 ### Authorization
+
+**High**
+/admin/dojo/fileaccesstoken/	django.contrib.admin.options.changelist_view	admin:dojo_fileaccesstoken_changelist
+/admin/dojo/fileaccesstoken/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/dojo/fileaccesstoken/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_fileaccesstoken_change
+/admin/dojo/fileaccesstoken/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_fileaccesstoken_delete
+/admin/dojo/fileaccesstoken/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_fileaccesstoken_history
+/admin/dojo/fileaccesstoken/add/	django.contrib.admin.options.add_view	admin:dojo_fileaccesstoken_add
+
+**Medium**
+/admin/auth/group/	django.contrib.admin.options.changelist_view	admin:auth_group_changelist
+/admin/auth/group/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/auth/group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_group_change
+/admin/auth/group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_group_delete
+/admin/auth/group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_group_history
+/admin/auth/group/add/	django.contrib.admin.options.add_view	admin:auth_group_add
+/admin/auth/user/	django.contrib.admin.options.changelist_view	admin:auth_user_changelist
+/admin/auth/user/<id>/password/	django.contrib.auth.admin.user_change_password	admin:auth_user_password_change
+/admin/auth/user/<path:object_id>/	django.views.generic.base.RedirectView	
+/admin/auth/user/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_user_change
+/admin/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_user_delete
+/admin/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_user_history
+/admin/auth/user/add/	django.contrib.auth.admin.add_view	admin:auth_user_add
+
+
 
 ### Auditing/Logging
 
@@ -109,25 +157,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/	django.contrib.admin.sites.index	admin:index
 /admin/<app_label>/	django.contrib.admin.sites.app_index	admin:app_list
 /admin/<url>	django.contrib.admin.sites.catch_all_view	
-/admin/auth/group/	django.contrib.admin.options.changelist_view	admin:auth_group_changelist
-/admin/auth/group/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/auth/group/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_group_change
-/admin/auth/group/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_group_delete
-/admin/auth/group/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_group_history
-/admin/auth/group/add/	django.contrib.admin.options.add_view	admin:auth_group_add
-/admin/auth/user/	django.contrib.admin.options.changelist_view	admin:auth_user_changelist
-/admin/auth/user/<id>/password/	django.contrib.auth.admin.user_change_password	admin:auth_user_password_change
-/admin/auth/user/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/auth/user/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:auth_user_change
-/admin/auth/user/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:auth_user_delete
-/admin/auth/user/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:auth_user_history
-/admin/auth/user/add/	django.contrib.auth.admin.add_view	admin:auth_user_add
-/admin/authtoken/tokenproxy/	django.contrib.admin.options.changelist_view	admin:authtoken_tokenproxy_changelist
-/admin/authtoken/tokenproxy/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/authtoken/tokenproxy/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:authtoken_tokenproxy_change
-/admin/authtoken/tokenproxy/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:authtoken_tokenproxy_delete
-/admin/authtoken/tokenproxy/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:authtoken_tokenproxy_history
-/admin/authtoken/tokenproxy/add/	django.contrib.admin.options.add_view	admin:authtoken_tokenproxy_add
+
 /admin/autocomplete/	django.contrib.admin.sites.autocomplete_view	admin:autocomplete
 /admin/django_celery_results/groupresult/	django.contrib.admin.options.changelist_view	admin:django_celery_results_groupresult_changelist
 /admin/django_celery_results/groupresult/<path:object_id>/	django.views.generic.base.RedirectView	
@@ -321,12 +351,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/dojo/engagement_survey/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_engagement_survey_delete
 /admin/dojo/engagement_survey/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_engagement_survey_history
 /admin/dojo/engagement_survey/add/	django.contrib.admin.options.add_view	admin:dojo_engagement_survey_add
-/admin/dojo/fileaccesstoken/	django.contrib.admin.options.changelist_view	admin:dojo_fileaccesstoken_changelist
-/admin/dojo/fileaccesstoken/<path:object_id>/	django.views.generic.base.RedirectView	
-/admin/dojo/fileaccesstoken/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_fileaccesstoken_change
-/admin/dojo/fileaccesstoken/<path:object_id>/delete/	django.contrib.admin.options.delete_view	admin:dojo_fileaccesstoken_delete
-/admin/dojo/fileaccesstoken/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_fileaccesstoken_history
-/admin/dojo/fileaccesstoken/add/	django.contrib.admin.options.add_view	admin:dojo_fileaccesstoken_add
+
 /admin/dojo/fileupload/	django.contrib.admin.options.changelist_view	admin:dojo_fileupload_changelist
 /admin/dojo/fileupload/<path:object_id>/	django.views.generic.base.RedirectView	
 /admin/dojo/fileupload/<path:object_id>/change/	django.contrib.admin.options.change_view	admin:dojo_fileupload_change
@@ -742,10 +767,8 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /admin/dojo/vulnerability_id_template/<path:object_id>/history/	django.contrib.admin.options.history_view	admin:dojo_vulnerability_id_template_history
 /admin/dojo/vulnerability_id_template/add/	django.contrib.admin.options.add_view	admin:dojo_vulnerability_id_template_add
 /admin/jsi18n/	django.contrib.admin.sites.i18n_javascript	admin:jsi18n
-/admin/login/	django.contrib.admin.sites.login	admin:login
-/admin/logout/	django.contrib.admin.sites.logout	admin:logout
-/admin/password_change/	django.contrib.admin.sites.password_change	admin:password_change
-/admin/password_change/done/	django.contrib.admin.sites.password_change_done	admin:password_change_done
+
+
 /admin/r/<int:content_type_id>/<path:object_id>/	django.contrib.contenttypes.views.shortcut	admin:view_on_site
 /admin/sites/site/	django.contrib.admin.options.changelist_view	admin:sites_site_changelist
 /admin/sites/site/<path:object_id>/	django.views.generic.base.RedirectView	
@@ -1296,8 +1319,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /finding_group/<fgid>/delete	dojo.finding_group.views.delete_finding_group	delete_finding_group
 /finding_group/<fgid>/jira/push	dojo.finding_group.views.push_to_jira	finding_group_push_to_jira
 /finding_group/<fgid>/jira/unlink	dojo.finding_group.views.unlink_jira	finding_group_unlink_jira
-/forgot_username/	dojo.user.views.DojoForgotUsernameView	forgot_username
-/forgot_username_done/	django.contrib.auth.views.PasswordResetDoneView	forgot_username_done
+
 /general_questionnaire/<esid>/delete	dojo.survey.views.delete_general_questionnaire	delete_general_questionnaire
 /github	dojo.github_issue_link.views.github	github
 /github-webhook	dojo.github_issue_link.views.webhook	github_web_hook
@@ -1322,9 +1344,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /jira/express	dojo.jira_link.views.express_new_jira	express_jira
 /jira/webhook/	dojo.jira_link.views.webhook	jira_web_hook
 /jira/webhook/<secret>	dojo.jira_link.views.webhook	jira_web_hook_secret
-/login	dojo.user.views.login_view	login
-/login/<str:backend>/	social_django.views.auth	social:begin
-/logout	dojo.user.views.logout_view	logout
+
 /manage_files/<oid>/<obj_type>	dojo.views.manage_files	manage_files
 /media/<path>	dojo.views.protected_serve	
 /metrics	dojo.metrics.views.metrics	metrics
@@ -1439,8 +1459,7 @@ We assessed commit `b98093dcb966ffe972f8719337de2209bf3989ec`
 /reports/excel_export	dojo.reports.views.excel_export	excel_export
 /reports/findings	dojo.reports.views.report_findings	report_findings
 /reports/quick	dojo.reports.views.quick_report	quick_report
-/reset/<uidb64>/<token>/	django.contrib.auth.views.PasswordResetConfirmView	password_reset_confirm
-/reset/done/	django.contrib.auth.views.PasswordResetCompleteView	password_reset_complete
+
 /robots.txt	dojo.urls.<lambda>	robots_file
 /simple_search	dojo.search.views.simple_search	simple_search
 /sla_config	dojo.sla_config.views.sla_config	sla_config
