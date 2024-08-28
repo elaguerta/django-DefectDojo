@@ -21,7 +21,7 @@ jobs:
     steps:
      
       - name: Checkout from_branch branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.from_branch }}
      
@@ -45,15 +45,15 @@ jobs:
         run: git push origin HEAD:${NEW_BRANCH}
      
       - name: Checkout release branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.NEW_BRANCH }}
      
       - name: Update version numbers in key files
         run: |
-          sed -ri "s/__version__ = '.*'/__version__ = '${{ github.event.inputs.release_number }}'/" dojo/__init__.py
-          sed -ri "s/\"version\": \".*\"/\"version\": \"${{ github.event.inputs.release_number }}\"/" components/package.json
-          sed -ri "s/appVersion: \".*\"/appVersion: \"${{ github.event.inputs.release_number }}\"/" helm/defectdojo/Chart.yaml
+          sed -ri 's/__version__ = ".*"/__version__ = "${{ github.event.inputs.release_number }}"/' dojo/__init__.py
+          sed -ri 's/"version": ".*"/"version": "${{ github.event.inputs.release_number }}"/' components/package.json
+          sed -ri 's/appVersion: ".*"/appVersion: "${{ github.event.inputs.release_number }}"/' helm/defectdojo/Chart.yaml
 
           if grep "\-dev" helm/defectdojo/Chart.yaml; then
               echo "x.y.z-dev found in Chart.yaml, probably releasing a new minor version"
@@ -75,7 +75,7 @@ jobs:
           grep -H version helm/defectdojo/Chart.yaml
 
       - name: Push version changes
-        uses: stefanzweifel/git-auto-commit-action@v4.16.0
+        uses: stefanzweifel/git-auto-commit-action@v5.0.1
         with:
           commit_user_name: "${{ env.GIT_USERNAME }}"
           commit_user_email: "${{ env.GIT_EMAIL }}"
@@ -88,7 +88,7 @@ jobs:
       - name: Create Pull Request
         env:
           REPO_ORG: ${{ env.repoorg }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

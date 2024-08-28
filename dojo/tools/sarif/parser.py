@@ -2,16 +2,19 @@ import json
 import logging
 import re
 import textwrap
+
 import dateutil.parser
-from dojo.tools.parser_test import ParserTest
+from django.utils.translation import gettext as _
+
 from dojo.models import Finding
+from dojo.tools.parser_test import ParserTest
 
 logger = logging.getLogger(__name__)
 
 CWE_REGEX = r"cwe-\d+"
 
 
-class SarifParser(object):
+class SarifParser:
     """OASIS Static Analysis Results Interchange Format (SARIF) for version 2.1.0 only.
 
     https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=sarif
@@ -29,16 +32,16 @@ class SarifParser(object):
     def get_findings(self, filehandle, test):
         """For simple interface of parser contract we just aggregate everything"""
         tree = json.load(filehandle)
-        items = list()
+        items = []
         # for each runs we just aggregate everything
-        for run in tree.get("runs", list()):
+        for run in tree.get("runs", []):
             items.extend(self.__get_items_from_run(run))
         return items
 
     def get_tests(self, scan_type, handle):
         tree = json.load(handle)
-        tests = list()
-        for run in tree.get("runs", list()):
+        tests = []
+        for run in tree.get("runs", []):
             test = ParserTest(
                 name=run["tool"]["driver"]["name"],
                 type=run["tool"]["driver"]["name"],
@@ -49,13 +52,13 @@ class SarifParser(object):
         return tests
 
     def __get_items_from_run(self, run):
-        items = list()
+        items = []
         # load rules
         rules = get_rules(run)
         artifacts = get_artifacts(run)
         # get the timestamp of the run if possible
         run_date = self.__get_last_invocation_date(run)
-        for result in run.get("results", list()):
+        for result in run.get("results", []):
             item = get_item(result, rules, artifacts, run_date)
             if item is not None:
                 items.append(item)
@@ -75,7 +78,10 @@ class SarifParser(object):
 
 def get_rules(run):
     rules = {}
-    for item in run["tool"]["driver"].get("rules", []):
+    rules_array = run["tool"]["driver"].get("rules", [])
+    if len(rules_array) == 0 and run["tool"].get("extensions") is not None:
+        rules_array = run["tool"]["extensions"][0].get("rules", [])
+    for item in rules_array:
         rules[item["id"]] = item
     return rules
 
@@ -158,16 +164,16 @@ def get_title(result, rule):
     title = None
     if "message" in result:
         title = get_message_from_multiformatMessageString(
-            result["message"], rule
+            result["message"], rule,
         )
     if title is None and rule is not None:
         if "shortDescription" in rule:
             title = get_message_from_multiformatMessageString(
-                rule["shortDescription"], rule
+                rule["shortDescription"], rule,
             )
         elif "fullDescription" in rule:
             title = get_message_from_multiformatMessageString(
-                rule["fullDescription"], rule
+                rule["fullDescription"], rule,
             )
         elif "name" in rule:
             title = rule["name"]
@@ -175,7 +181,8 @@ def get_title(result, rule):
             title = rule["id"]
 
     if title is None:
-        raise ValueError("No information found to create a title")
+        msg = "No information found to create a title"
+        raise ValueError(msg)
 
     return textwrap.shorten(title, 150)
 
@@ -214,29 +221,43 @@ def get_snippet(result):
 def get_codeFlowsDescription(codeFlows):
     description = ""
     for codeFlow in codeFlows:
-        if "threadFlows" not in codeFlow:
-            continue
-        for threadFlow in codeFlow["threadFlows"]:
+        for threadFlow in codeFlow.get("threadFlows", []):
             if "locations" not in threadFlow:
                 continue
 
-            description = "**Code flow:**\n"
-            for location in threadFlow["locations"]:
-                physicalLocation = location["location"]["physicalLocation"]
-                region = physicalLocation["region"]
-                description += (
-                    "\t" + physicalLocation["artifactLocation"]["uri"]
-                    if "byteOffset" in region
-                    else "\t"
-                    + physicalLocation["artifactLocation"]["uri"]
-                    + ":"
-                    + str(region["startLine"])
-                )
+            description = f"**{_('Code flow')}:**\n"
+            line = 1
+
+            for location in threadFlow.get("locations", []):
+                physicalLocation = location.get("location", {}).get("physicalLocation", {})
+                region = physicalLocation.get("region", {})
+                uri = physicalLocation.get("artifactLocation").get("uri")
+
+                start_line = ""
+                start_column = ""
+                snippet = ""
+
+                if "startLine" in region:
+                    start_line = f":L{str(region.get('startLine'))}"
+
                 if "startColumn" in region:
-                    description += ":" + str(region["startColumn"])
+                    start_column = f":C{str(region.get('startColumn'))}"
+
                 if "snippet" in region:
-                    description += "\t-\t" + region["snippet"]["text"]
-                description += "\n"
+                    snippet = f"\t-\t{region.get('snippet').get('text')}"
+
+                description += f"{line}. {uri}{start_line}{start_column}{snippet}\n"
+
+                if "message" in location.get("location", {}):
+                    message_field = location.get("location", {}).get("message", {})
+                    if "markdown" in message_field:
+                        message = message_field.get("markdown", "")
+                    else:
+                        message = message_field.get("text", "")
+
+                    description += f"\t{message}\n"
+
+                line += 1
 
     return description
 
@@ -246,34 +267,30 @@ def get_description(result, rule):
     message = ""
     if "message" in result:
         message = get_message_from_multiformatMessageString(
-            result["message"], rule
+            result["message"], rule,
         )
-        description += "**Result message:** {}\n".format(message)
+        description += f"**Result message:** {message}\n"
     if get_snippet(result) is not None:
-        description += "**Snippet:**\n```{}```\n".format(get_snippet(result))
+        description += f"**Snippet:**\n```\n{get_snippet(result)}\n```\n"
     if rule is not None:
         if "name" in rule:
-            description += "**Rule name:** {}\n".format(rule.get("name"))
+            description += f"**{_('Rule name')}:** {rule.get('name')}\n"
         shortDescription = ""
         if "shortDescription" in rule:
             shortDescription = get_message_from_multiformatMessageString(
-                rule["shortDescription"], rule
+                rule["shortDescription"], rule,
             )
             if shortDescription != message:
-                description += "**Rule short description:** {}\n".format(
-                    shortDescription
-                )
+                description += f"**{_('Rule short description')}:** {shortDescription}\n"
         if "fullDescription" in rule:
             fullDescription = get_message_from_multiformatMessageString(
-                rule["fullDescription"], rule
+                rule["fullDescription"], rule,
             )
             if (
                 fullDescription != message
                 and fullDescription != shortDescription
             ):
-                description += "**Rule full description:** {}\n".format(
-                    fullDescription
-                )
+                description += f"**{_('Rule full description')}:** {fullDescription}\n"
 
     if len(result.get("codeFlows", [])) > 0:
         description += get_codeFlowsDescription(result["codeFlows"])
@@ -291,7 +308,7 @@ def get_references(rule):
             reference = rule["helpUri"]
         elif "help" in rule:
             helpText = get_message_from_multiformatMessageString(
-                rule["help"], rule
+                rule["help"], rule,
             )
             if helpText.startswith("http"):
                 reference = helpText
@@ -399,10 +416,16 @@ def get_item(result, rules, artifacts, run_date):
         # Some tools such as GitHub or Grype return the severity in properties
         # instead
         if "properties" in rule and "security-severity" in rule["properties"]:
-            cvss = float(rule["properties"]["security-severity"])
-            severity = cvss_to_severity(cvss)
-            finding.cvssv3_score = cvss
-            finding.severity = severity
+            try:
+                cvss = float(rule["properties"]["security-severity"])
+                severity = cvss_to_severity(cvss)
+                finding.cvssv3_score = cvss
+                finding.severity = severity
+            except ValueError:
+                if rule["properties"]["security-severity"].lower().capitalize() in ["Info", "Low", "Medium", "High", "Critical"]:
+                    finding.severity = rule["properties"]["security-severity"].lower().capitalize()
+                else:
+                    finding.severity = "Info"
 
     # manage the case that some tools produce CWE as properties of the result
     cwes_properties_extracted = get_result_cwes_properties(result)
@@ -412,7 +435,7 @@ def get_item(result, rules, artifacts, run_date):
     # manage fixes provided in the report
     if "fixes" in result:
         finding.mitigation = "\n".join(
-            [fix.get("description", {}).get("text") for fix in result["fixes"]]
+            [fix.get("description", {}).get("text") for fix in result["fixes"]],
         )
 
     if run_date:
@@ -420,6 +443,7 @@ def get_item(result, rules, artifacts, run_date):
 
     # manage tags provided in the report and rule and remove duplicated
     tags = list(set(get_properties_tags(rule) + get_properties_tags(result)))
+    tags = [s.removeprefix("external/cwe/") for s in tags]
     finding.tags = tags
 
     # manage fingerprints
@@ -436,7 +460,7 @@ def get_item(result, rules, artifacts, run_date):
         hashes = get_fingerprints_hashes(result["partialFingerprints"])
         sorted_hashes = sorted(hashes.keys())
         finding.unique_id_from_tool = "|".join(
-            [f'{key}:{hashes[key]["value"]}' for key in sorted_hashes]
+            [f'{key}:{hashes[key]["value"]}' for key in sorted_hashes],
         )
     return finding
 
@@ -446,7 +470,7 @@ def get_fingerprints_hashes(values):
     Method that generate a `unique_id_from_tool` data from the `fingerprints` attribute.
      - for now, we take the value of the last version of the first hash method.
     """
-    fingerprints = dict()
+    fingerprints = {}
     for key in values:
         if "/" in key:
             key_method = key.split("/")[-2]

@@ -1,7 +1,6 @@
-from ..dojo_test_case import DojoTestCase, get_unit_tests_path
 from dojo.models import Test
-from dojo.tools.burp_api.parser import BurpApiParser
-from dojo.tools.burp_api.parser import convert_severity, convert_confidence
+from dojo.tools.burp_api.parser import BurpApiParser, convert_confidence, convert_severity
+from unittests.dojo_test_case import DojoTestCase, get_unit_tests_path
 
 
 class TestParser(DojoTestCase):
@@ -49,7 +48,6 @@ class TestParser(DojoTestCase):
             self.assertEqual("Info", convert_severity({}))
 
     def test_convert_confidence(self):
-        confidence = None
         with self.subTest(confidence="certain"):
             self.assertGreater(3, convert_confidence({"confidence": "certain"}))
         with self.subTest(confidence="firm"):
@@ -61,3 +59,14 @@ class TestParser(DojoTestCase):
             self.assertIsNone(convert_confidence({"confidence": "undefined"}))
         with self.subTest(confidence=None):
             self.assertIsNone(convert_confidence({}))
+
+    def test_fix_issue_9128(self):
+        testfile = get_unit_tests_path() + "/scans/burp_api/fix_issue_9128.json"
+        with open(testfile) as f:
+            parser = BurpApiParser()
+            findings = parser.get_findings(f, Test())
+            for finding in findings:
+                for endpoint in finding.unsaved_endpoints:
+                    endpoint.clean()
+            for item in findings:
+                self.assertIsNotNone(item.impact)

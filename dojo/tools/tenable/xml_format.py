@@ -10,7 +10,7 @@ from dojo.models import Endpoint, Finding, Test
 LOGGER = logging.getLogger(__name__)
 
 
-class TenableXMLParser(object):
+class TenableXMLParser:
     def get_text_severity(self, severity_id):
         """Convert data of the report into severity"""
         severity = "Info"
@@ -24,6 +24,21 @@ class TenableXMLParser(object):
             severity = "Low"
         # Ensure the severity is a valid choice. Fall back to info otherwise
         if severity not in Finding.SEVERITIES.keys():
+            severity = "Info"
+        return severity
+
+    def get_cvss_severity(self, cvss_score):
+        """Convert data of the report into severity"""
+        severity = "Info"
+        if float(cvss_score) >= 9.0:
+            severity = "Critical"
+        elif float(cvss_score) >= 7.0:
+            severity = "High"
+        elif float(cvss_score) >= 5.0:
+            severity = "Medium"
+        elif float(cvss_score) > 0.0:
+            severity = "Low"
+        else:
             severity = "Info"
         return severity
 
@@ -46,11 +61,12 @@ class TenableXMLParser(object):
         root = nscan.getroot()
 
         if "NessusClientData_v2" not in root.tag:
-            raise ValueError(
+            msg = (
                 "This version of Nessus report is not supported. "
                 "Please make sure the export is "
                 "formatted using the NessusClientData_v2 schema."
             )
+            raise ValueError(msg)
 
         dupes = {}
         for report in root.iter("Report"):
@@ -58,7 +74,7 @@ class TenableXMLParser(object):
                 ip = host.attrib.get("name")
                 fqdn = None
                 fqdn_element_text = self.safely_get_element_text(
-                    host.find('.//HostProperties/tag[@name="host-fqdn"]')
+                    host.find('.//HostProperties/tag[@name="host-fqdn"]'),
                 )
                 if fqdn_element_text is not None:
                     fqdn = fqdn_element_text
@@ -88,12 +104,12 @@ class TenableXMLParser(object):
                     description = ""
                     plugin_output = None
                     synopsis_element_text = self.safely_get_element_text(
-                        item.find("synopsis")
+                        item.find("synopsis"),
                     )
                     if synopsis_element_text is not None:
                         description = f"{synopsis_element_text}\n\n"
                     plugin_output_element_text = self.safely_get_element_text(
-                        item.find("plugin_output")
+                        item.find("plugin_output"),
                     )
                     if plugin_output_element_text is not None:
                         plugin_output = f"Plugin Output: {ip}{str(f':{port}' if port is not None else '')}"
@@ -107,27 +123,27 @@ class TenableXMLParser(object):
                     # Build up the impact
                     impact = ""
                     description_element_text = self.safely_get_element_text(
-                        item.find("description")
+                        item.find("description"),
                     )
                     if description_element_text is not None:
                         impact = description_element_text + "\n\n"
                     cvss_element_text = self.safely_get_element_text(
-                        item.find("cvss")
+                        item.find("cvss"),
                     )
                     if cvss_element_text is not None:
                         impact += f"CVSS Score: {cvss_element_text}\n"
                     cvssv3_element_text = self.safely_get_element_text(
-                        item.find("cvssv3")
+                        item.find("cvssv3"),
                     )
                     if cvssv3_element_text is not None:
                         impact += f"CVSSv3 Score: {cvssv3_element_text}\n"
                     cvss_vector_element_text = self.safely_get_element_text(
-                        item.find("cvss_vector")
+                        item.find("cvss_vector"),
                     )
                     if cvss_vector_element_text is not None:
                         impact += f"CVSS Vector: {cvss_vector_element_text}\n"
                     cvssv3_vector_element_text = self.safely_get_element_text(
-                        item.find("cvss3_vector")
+                        item.find("cvss3_vector"),
                     )
                     if cvssv3_vector_element_text is not None:
                         impact += (
@@ -135,14 +151,14 @@ class TenableXMLParser(object):
                         )
                     cvss_base_score_element_text = (
                         self.safely_get_element_text(
-                            item.find("cvss_base_score")
+                            item.find("cvss_base_score"),
                         )
                     )
                     if cvss_base_score_element_text is not None:
                         impact += f"CVSS Base Score: {cvss_base_score_element_text}\n"
                     cvss_temporal_score_element_text = (
                         self.safely_get_element_text(
-                            item.find("cvss_temporal_score")
+                            item.find("cvss_temporal_score"),
                         )
                     )
                     if cvss_temporal_score_element_text is not None:
@@ -151,7 +167,7 @@ class TenableXMLParser(object):
                     # Set the mitigation
                     mitigation = "N/A"
                     mitigation_element_text = self.safely_get_element_text(
-                        item.find("solution")
+                        item.find("solution"),
                     )
                     if mitigation_element_text is not None:
                         mitigation = mitigation_element_text
@@ -171,21 +187,21 @@ class TenableXMLParser(object):
 
                     vulnerability_id = None
                     cve_element_text = self.safely_get_element_text(
-                        item.find("cve")
+                        item.find("cve"),
                     )
                     if cve_element_text is not None:
                         vulnerability_id = cve_element_text
 
                     cwe = None
                     cwe_element_text = self.safely_get_element_text(
-                        item.find("cwe")
+                        item.find("cwe"),
                     )
                     if cwe_element_text is not None:
                         cwe = cwe_element_text
 
                     cvssv3 = None
                     cvssv3_element_text = self.safely_get_element_text(
-                        item.find("cvss3_vector")
+                        item.find("cvss3_vector"),
                     )
                     if cvssv3_element_text is not None:
                         if "CVSS:3.0/" not in cvssv3_element_text:
@@ -193,15 +209,19 @@ class TenableXMLParser(object):
                                 f"CVSS:3.0/{cvssv3_element_text}"
                             )
                         cvssv3 = CVSS3(cvssv3_element_text).clean_vector(
-                            output_prefix=True
+                            output_prefix=True,
                         )
 
                     cvssv3_score = None
                     cvssv3_score_element_text = self.safely_get_element_text(
-                        item.find("cvssv3")
+                        item.find("cvssv3"),
                     )
                     if cvssv3_score_element_text is not None:
                         cvssv3_score = cvssv3_score_element_text
+
+                    cvss = self.safely_get_element_text(item.find("cvss3_base_score"))
+                    if cvss is not None:
+                        severity = self.get_cvss_severity(cvss)
 
                     # Determine the current entry has already been parsed in
                     # this report

@@ -82,6 +82,12 @@ spec:
         emptyDir: {}
         {{- end }}
       {{- end }}
+      {{- if .Values.dbMigrationChecker.enabled }}
+      initContainers:
+      {{$data := dict "fullName" $fullName }}
+      {{- $newContext := merge . (dict "fullName" $fullName) }}
+      {{- include "dbMigrationChecker" $newContext | nindent 6 }}
+      {{- end }}
       containers:
       {{- if .Values.cloudsql.enabled  }}
       - name: cloudsql-proxy
@@ -94,8 +100,6 @@ spec:
         - "-verbose={{ .Values.cloudsql.verbose }}"
         {{- if eq .Values.database "postgresql" }}
         - "-instances={{ .Values.cloudsql.instance }}=tcp:{{ .Values.postgresql.primary.service.ports.postgresql }}"
-        {{- else if eq .Values.database "mysql" }}
-        - "-instances={{ .Values.cloudsql.instance }}=tcp:{{ .Values.mysql.primary.service.ports.mysql }}"
         {{- end }}
         {{- if .Values.cloudsql.enable_iam_login }}
         - "-enable_iam_login"
@@ -109,10 +113,14 @@ spec:
         image: {{ .Values.monitoring.prometheus.image }}
         imagePullPolicy: {{ .Values.monitoring.prometheus.imagePullPolicy }}
         command: [ '/usr/bin/nginx-prometheus-exporter', '-nginx.scrape-uri', 'http://127.0.0.1:8080/nginx_status']
+        ports:
+        - name: http-metrics
+          protocol: TCP
+          containerPort: 9113
         livenessProbe:
           httpGet:
             path: /metrics
-            port: 9113
+            port: http-metrics
           periodSeconds: 20
           initialDelaySeconds: 15
           timeoutSeconds: 5
@@ -144,7 +152,7 @@ spec:
           mountPath: {{.Values.extraConfigs.DD_MEDIA_ROOT | default "/app/media" | quote }}
         {{- end }}
         ports:
-        - name: http
+        - name: http-uwsgi
           protocol: TCP
           containerPort: 8081
         {{- if .Values.django.uwsgi.enable_debug }}
@@ -162,10 +170,7 @@ spec:
         - name: DD_CELERY_BROKER_PASSWORD
           valueFrom:
             secretKeyRef:
-            {{- if eq .Values.celery.broker "rabbitmq" }}
-              name: {{ .Values.rabbitmq.auth.existingPasswordSecret | default "defectdojo-rabbitmq-specific" }}
-              key: {{ .Values.rabbitmq.auth.secretPasswordKey | default "rabbitmq-password" }}  
-            {{- else if eq .Values.celery.broker "redis" }}
+            {{- if eq .Values.celery.broker "redis" }}
               name: {{ .Values.redis.auth.existingSecret | default "defectdojo-redis-specific" }}
               key: {{ .Values.redis.auth.existingSecretPasswordKey | default "redis-password" }}
             {{- end }}
@@ -182,9 +187,6 @@ spec:
               {{- else if eq .Values.database "postgresqlha" }}
                 name: {{ .Values.postgresqlha.postgresql.existingSecret | default "defectdojo-postgresql-ha-specific" }}
                 key: postgresql-postgres-password
-              {{- else if eq .Values.database "mysql" }}
-                name: {{ .Values.mysql.auth.existingSecret | default "defectdojo-mysql-specific" }}
-                key: {{ .Values.mysql.auth.secretKey | default "mysql-password" }}
               {{- end }}
         - name: DD_SECRET_KEY
           valueFrom:
@@ -207,7 +209,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /login?force_login_form&next=/
-            port: http
+            port: http-uwsgi
             httpHeaders:
             - name: Host
               value: {{ .Values.host }}

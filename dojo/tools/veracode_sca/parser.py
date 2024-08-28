@@ -1,17 +1,17 @@
 import csv
-import json
 import io
+import json
+from datetime import datetime
 
 from cvss import parser as cvss_parser
 from dateutil import parser
-from datetime import datetime
-
+from django.conf import settings
 from django.utils import timezone
 
 from dojo.models import Finding
 
 
-class VeracodeScaParser(object):
+class VeracodeScaParser:
     vc_severity_mapping = {
         1: "Info",
         2: "Low",
@@ -51,7 +51,15 @@ class VeracodeScaParser(object):
             if issue.get("issue_type") != "vulnerability":
                 continue
 
-            date = parser.parse(issue.get("created_date"))
+            # Get the date based on the first_seen setting
+            try:
+                if settings.USE_FIRST_SEEN:
+                    date = parser.parse(issue.get("created_date"))
+                else:
+                    date = parser.parse(issue.get("created_date"))
+            except Exception:
+                date = None
+
             library = issue.get("library")
             component_name = library.get("name")
             if library.get("id") and library.get("id").startswith("maven:"):
@@ -61,7 +69,7 @@ class VeracodeScaParser(object):
             vulnerability = issue.get("vulnerability")
             vuln_id = vulnerability.get("cve")
             if vuln_id and not (
-                vuln_id.startswith("cve") or vuln_id.startswith("CVE")
+                vuln_id.startswith(("cve", "CVE"))
             ):
                 vuln_id = "CVE-" + vuln_id
             cvss_score = issue.get("severity")
@@ -70,10 +78,10 @@ class VeracodeScaParser(object):
             severity = self.__cvss_to_severity(cvss_score)
 
             description = (
-                "Project name: {0}\n"
-                "Title: \n>{1}"
+                "Project name: {}\n"
+                "Title: \n>{}"
                 "\n\n-----\n\n".format(
-                    issue.get("project_name"), vulnerability.get("title")
+                    issue.get("project_name"), vulnerability.get("title"),
                 )
             )
 
@@ -105,13 +113,13 @@ class VeracodeScaParser(object):
             if vulnerability.get("cwe_id"):
                 cwe = vulnerability.get("cwe_id")
                 if cwe:
-                    if cwe.startswith("CWE-") or cwe.startswith("cwe-"):
+                    if cwe.startswith(("CWE-", "cwe-")):
                         cwe = cwe[4:]
                     if cwe.isdigit():
                         finding.cwe = int(cwe)
 
             finding.references = "\n\n" + issue.get("_links").get("html").get(
-                "href"
+                "href",
             )
             status = issue.get("issue_status")
             if (
@@ -136,7 +144,7 @@ class VeracodeScaParser(object):
         if isinstance(content, bytes):
             content = content.decode("utf-8")
         reader = csv.DictReader(
-            io.StringIO(content), delimiter=",", quotechar='"'
+            io.StringIO(content), delimiter=",", quotechar='"',
         )
         csvarray = []
 
@@ -154,24 +162,34 @@ class VeracodeScaParser(object):
                 issueId = list(row.values())[0]
             library = row.get("Library", None)
             if row.get("Package manager") == "MAVEN" and row.get(
-                "Coordinate 2"
+                "Coordinate 2",
             ):
                 library = row.get("Coordinate 2")
             version = row.get("Version in use", None)
             vuln_id = row.get("CVE", None)
             if vuln_id and not (
-                vuln_id.startswith("cve") or vuln_id.startswith("CVE")
+                vuln_id.startswith(("cve", "CVE"))
             ):
                 vuln_id = "CVE-" + vuln_id
 
             severity = self.fix_severity(row.get("Severity", None))
             cvss_score = float(row.get("CVSS score", 0))
-            date = datetime.strptime(
-                row.get("Issue opened: Scan date"), "%d %b %Y %H:%M%p %Z"
-            )
+            # Get the date based on the first_seen setting
+            try:
+                if settings.USE_FIRST_SEEN:
+                    date = datetime.strptime(
+                        row.get("Issue opened: Scan date"), "%d %b %Y %H:%M%p %Z",
+                    )
+                else:
+                    date = datetime.strptime(
+                        row.get("Issue opened: Scan date"), "%d %b %Y %H:%M%p %Z",
+                    )
+            except Exception:
+                date = None
+
             description = (
-                "Project name: {0}\n"
-                "Title: \n>{1}"
+                "Project name: {}\n"
+                "Title: \n>{}"
                 "\n\n-----\n\n".format(row.get("Project"), row.get("Title"))
             )
 

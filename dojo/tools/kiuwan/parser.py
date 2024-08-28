@@ -25,7 +25,7 @@ class Severityfilter:
             self.severity = "Info"
 
 
-class KiuwanParser(object):
+class KiuwanParser:
     def get_scan_types(self):
         return ["Kiuwan Scan"]
 
@@ -40,14 +40,14 @@ class KiuwanParser(object):
         if isinstance(content, bytes):
             content = content.decode("utf-8")
         reader = csv.DictReader(
-            io.StringIO(content), delimiter=",", quotechar='"'
+            io.StringIO(content), delimiter=",", quotechar='"',
         )
         csvarray = []
 
         for row in reader:
             csvarray.append(row)
 
-        dupes = dict()
+        dupes = {}
         for row in csvarray:
             finding = Finding(test=test)
             findingdict = {}
@@ -58,11 +58,17 @@ class KiuwanParser(object):
             findingdict["file"] = row["File"]
             findingdict["line_number"] = row["Line number"]
             findingdict["description"] = (
-                "**Vulnerability type** : "
-                + row["Vulnerability type"]
+                "**Software characteristic** : "
+                + row["Software characteristic"]
+                + "\n\n"
+                + "**Vulnerability type** : "
+                + (row["Vulnerability type"] if "Vulnerability type" in row else "")
                 + "\n\n"
                 + "**CWE Scope** : "
                 + row["CWE Scope"]
+                + "\n\n"
+                + "**File** : "
+                + row["File"]
                 + "\n\n"
                 + "**Line number** : "
                 + row["Line number"]
@@ -92,7 +98,7 @@ class KiuwanParser(object):
 
             finding.title = findingdict["title"]
             finding.file_path = findingdict["file"]
-            finding.line = findingdict["line_number"]
+            finding.line = findingdict["line_number"] if findingdict["line_number"] != "" else None
             finding.description = findingdict["description"]
             finding.references = "Not provided!"
             finding.mitigation = "Not provided!"
@@ -116,7 +122,9 @@ class KiuwanParser(object):
                         + finding.title
                         + "|"
                         + finding.description
-                    ).encode("utf-8")
+                        + "|"
+                        + str(finding.cwe)
+                    ).encode("utf-8"),
                 ).hexdigest()
 
                 if key not in dupes:

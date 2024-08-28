@@ -14,7 +14,7 @@ Veracode reports can be ingested in either XML or JSON Format
       - Requires slight modification of the response returned from the API
       - Exmample of a request being: `url <endpoint> | jq "{findings}"`
       - Desired Format:
-        ```
+        ```json
         {
             "findings": [
                 {
@@ -28,7 +28,7 @@ Veracode reports can be ingested in either XML or JSON Format
       - This response can be saved directly to a file and uploaded
       - Not as ideal for crafting a refined report consisting of multiple requests
       - Desired Format:
-        ```
+        ```json
         {
             "_embedded": {
                 "findings": [
@@ -46,3 +46,6 @@ Veracode reports can be ingested in either XML or JSON Format
             }
         }
         ```
+
+### Sample Scan Data
+Sample Veracode scans can be found [here](https://github.com/DefectDojo/django-DefectDojo/tree/master/unittests/scans/veracode).

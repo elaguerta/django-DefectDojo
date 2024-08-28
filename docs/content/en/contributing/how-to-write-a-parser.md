@@ -43,7 +43,7 @@ $ docker-compose build --build-arg uid=1000
 
 ## Factory contract
 
-Parser are loaded dynamicaly with a factory pattern. To have your parser loaded and works correctly, you need to implement the contract.
+Parsers are loaded dynamicaly with a factory pattern. To have your parser loaded and works correctly, you need to implement the contract.
 
 1. your parser **MUST** be in a sub-module of module `dojo.tools`
    - ex: `dojo.tools.my_tool.parser` module
@@ -142,6 +142,12 @@ Very bad example:
     finding.unsaved_endpoints = [endpoint]
 ```
 
+### Use the right libraries to parse information
+Various file formats are handled through libraries. In order to keep DefectDojo slim and also don't extend the attack surface, keep the number of libraries used minimal and take other parsers as an example.
+
+#### defusedXML in favour of lxml
+As xml is by default an unsecure format, the information parsed from various xml output has to be parsed in a secure way. Within an evaluation, we determined that defusedXML is the library which we will use in the future to parse xml files in parsers as this library is rated more secure. Thus, we will only accept PRs with the defusedxml library. 
+
 ### Not all attributes are mandatory
 
 Parsers may have many fields, out of which many of them may be optional.
@@ -157,7 +163,7 @@ Good example:
 
 ```python
    if "mykey" in data:
-       finding.cve = data["mykey"]
+       finding.cwe = data["mykey"]
 ```
 
 ### Do not parse CVSS by hand (vector, score or severity)
@@ -227,6 +233,8 @@ Bad example (DIY):
 
 By default a new parser uses the 'legacy' deduplication algorithm documented at https://documentation.defectdojo.com/usage/features/#deduplication-algorithms
 
+Please use a pre-defined deduplication algorithm where applicable.
+
 ## Unit tests
 
 Each parser must have unit tests, at least to test for 0 vuln, 1 vuln and many vulns. You can take a look at how other parsers have them for starters. The more quality tests, the better.
@@ -242,7 +250,7 @@ For ex:
             self.assertEqual(True, finding.verified)
             self.assertEqual(False, finding.duplicate)
             self.assertIn(finding.severity, Finding.SEVERITIES)
-            self.assertEqual("CVE-2020-36234", finding.cve)
+            self.assertEqual("CVE-2020-36234", finding.vulnerability_ids[0])
             self.assertEqual(261, finding.cwe)
             self.assertEqual("CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:C/C:L/I:L/A:N", finding.cvssv3)
             self.assertIn("security", finding.tags)
@@ -250,6 +258,24 @@ For ex:
             self.assertEqual("3287f2d0-554f-491b-8516-3c349ead8ee5", finding.unique_id_from_tool)
             self.assertEqual("TEST1", finding.vuln_id_from_tool)
 ```
+
+### Use with to open example files
+
+In order to make certain that file handles are closed properly, please use the with pattern to open files.
+Instead of:
+```python
+    testfile = open("path_to_file.json")
+    ...
+    testfile.close()
+```
+
+use:
+```python
+    with open("path_to_file.json") as testfile:
+        ...
+```
+
+This ensures the file is closed at the end of the with statement, even if an exception occurs somewhere in the block.
 
 ### Test database
 
@@ -323,4 +349,12 @@ If you want to take a look at previous parsers that are now part of DefectDojo, 
 
 ## Update the import page documentation
 
-Please update [`docs/content/en/integrations/parsers.md`] with the details of your new parser.
+Please add a new .md file in [`docs/content/en/integrations/parsers`] with the details of your new parser.  Include the following content headings:
+
+* Acceptable File Type(s) - please include how to generate this type of file from the related tool, as some tools have multiple methods or require specific commands.
+* An example unit test block, if applicable.
+* A link to the relevant unit tests folder so that users can quickly navigate there from Documentation.
+* A link to the scanner itself - (e.g. GitHub or vendor link)
+
+Here is an example of a completed Parser documentation page: https://defectdojo.github.io/django-DefectDojo/integrations/parsers/file/awssecurityhub/
+

@@ -1,9 +1,10 @@
-import json
 import hashlib
+import json
+
 from dojo.models import Finding
 
 
-class CodeCheckerParser(object):
+class CodeCheckerParser:
     def get_scan_types(self):
         return ["Codechecker Report native"]
 
@@ -26,6 +27,7 @@ class CodeCheckerParser(object):
 
     def parse_json(self, json_output):
         data = json_output.read()
+        #  'utf-8' This line was added to pass a unittest in test_parsers.TestParsers.test_file_existence.
         return json.loads(data)
 
     def get_items(self, tree):
@@ -47,7 +49,7 @@ def get_item(vuln):
     if "type" in vuln:
         vuln_type = vuln.get("type", "None")
         if vuln_type != "None":
-            description += "Type: {}\n".format(vuln_type)
+            description += f"Type: {vuln_type}\n"
 
     if "message" in vuln:
         description += "{}\n".format(vuln["message"])
@@ -56,15 +58,13 @@ def get_item(vuln):
     file_path = location["path"] if "path" in location else None
 
     if file_path:
-        description += "File path: {}\n".format(file_path)
+        description += f"File path: {file_path}\n"
 
     line = vuln["line"] if "line" in vuln else None
     column = vuln["column"] if "column" in vuln else None
 
     if line is not None and column is not None:
-        description += "Location in file: line {}, column {}\n".format(
-            line, column
-        )
+        description += f"Location in file: line {line}, column {column}\n"
 
     sast_source_line = line
 

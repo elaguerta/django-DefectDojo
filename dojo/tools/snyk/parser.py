@@ -1,10 +1,11 @@
 import json
 
 from cvss.cvss3 import CVSS3
+
 from dojo.models import Finding
 
 
-class SnykParser(object):
+class SnykParser:
     def get_scan_types(self):
         return ["Snyk Scan"]
 
@@ -36,29 +37,32 @@ class SnykParser(object):
             except Exception:
                 tree = json.loads(data)
         except Exception:
-            raise ValueError("Invalid format")
+            msg = "Invalid format"
+            raise ValueError(msg)
 
         return tree
 
     def get_items(self, tree, test):
         items = {}
-        target_file = tree.get("displayTargetFile", None)
-        upgrades = tree.get("remediation", {}).get("upgrade", None)
+        iterator = 0
         if "vulnerabilities" in tree:
+            target_file = tree.get("displayTargetFile", None)
+            upgrades = tree.get("remediation", {}).get("upgrade", None)
             vulnerabilityTree = tree["vulnerabilities"]
-
             for node in vulnerabilityTree:
                 item = self.get_item(
-                    node, test, target_file=target_file, upgrades=upgrades
+                    node, test, target_file=target_file, upgrades=upgrades,
                 )
-                unique_key = node["title"] + str(
-                    node["packageName"]
-                    + str(node["version"])
-                    + str(node["from"])
-                    + str(node["id"])
+                items[iterator] = item
+                iterator += 1
+        elif "runs" in tree and tree["runs"][0].get("results"):
+            results = tree["runs"][0]["results"]
+            for node in results:
+                item = self.get_code_item(
+                    node, test,
                 )
-                items[unique_key] = item
-
+                items[iterator] = item
+                iterator += 1
         return list(items.values())
 
     def get_item(self, vulnerability, test, target_file=None, upgrades=None):
@@ -66,7 +70,7 @@ class SnykParser(object):
         # or an array for multiple versions depending on the language.
         if isinstance(vulnerability["semver"]["vulnerable"], list):
             vulnerable_versions = ", ".join(
-                vulnerability["semver"]["vulnerable"]
+                vulnerability["semver"]["vulnerable"],
             )
         else:
             vulnerable_versions = vulnerability["semver"]["vulnerable"]
@@ -142,6 +146,10 @@ class SnykParser(object):
         if vulnerability.get("CVSSv3"):
             finding.cvssv3 = CVSS3(vulnerability["CVSSv3"]).clean_vector()
 
+        if vulnerability.get("epssDetails") is not None:
+            finding.epss_score = vulnerability["epssDetails"]["probability"]
+            finding.epss_percentile = vulnerability["epssDetails"]["percentile"]
+
         # manage CVE and CWE with idnitifiers
         cwe_references = ""
         if "identifiers" in vulnerability:
@@ -156,7 +164,7 @@ class SnykParser(object):
                     # Per the current json format, if several CWEs, take the
                     # first one.
                     finding.cwe = int(cwes[0].split("-")[1])
-                    if len(vulnerability["identifiers"]["CVE"]) > 1:
+                    if len(vulnerability["identifiers"]["CWE"]) > 1:
                         cwe_references = ", ".join(cwes)
                 else:
                     finding.cwe = 1035
@@ -164,13 +172,11 @@ class SnykParser(object):
         references = ""
         if "id" in vulnerability:
             references = "**SNYK ID**: https://app.snyk.io/vuln/{}\n\n".format(
-                vulnerability["id"]
+                vulnerability["id"],
             )
 
         if cwe_references:
-            references += "Several CWEs were reported: \n\n{}\n".format(
-                cwe_references
-            )
+            references += f"Several CWEs were reported: \n\n{cwe_references}\n"
 
         # Append vuln references to references section
         for item in vulnerability.get("references", []):
@@ -192,8 +198,8 @@ class SnykParser(object):
 
         # Add Target file if supplied
         if target_file:
-            finding.unsaved_tags.append("target_file:{}".format(target_file))
-            finding.mitigation += "\nUpgrade Location: {}".format(target_file)
+            finding.unsaved_tags.append(f"target_file:{target_file}")
+            finding.mitigation += f"\nUpgrade Location: {target_file}"
 
         # Add the upgrade libs list to the mitigation section
         if upgrades:
@@ -205,11 +211,52 @@ class SnykParser(object):
                     for lib in tertiary_upgrade_list
                 ):
                     finding.unsaved_tags.append(
-                        "upgrade_to:{}".format(upgraded_pack)
+                        f"upgrade_to:{upgraded_pack}",
                     )
-                    finding.mitigation += "\nUpgrade from {} to {} to fix this issue, as well as updating the following:\n - ".format(
-                        current_pack_version, upgraded_pack
-                    )
+                    finding.mitigation += f"\nUpgrade from {current_pack_version} to {upgraded_pack} to fix this issue, as well as updating the following:\n - "
                     finding.mitigation += "\n - ".join(tertiary_upgrade_list)
+        return finding
 
+    def get_code_item(self, vulnerability, test):
+        ruleId = vulnerability["ruleId"]
+        ruleIndex = vulnerability["ruleIndex"]
+        message = vulnerability["message"]["text"]
+        score = vulnerability["properties"]["priorityScore"]
+        locations_uri = vulnerability["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+        locations_uriBaseId = vulnerability["locations"][0]["physicalLocation"]["artifactLocation"]["uriBaseId"]
+        locations_startLine = vulnerability["locations"][0]["physicalLocation"]["region"]["startLine"]
+        locations_endLine = vulnerability["locations"][0]["physicalLocation"]["region"]["endLine"]
+        locations_startColumn = vulnerability["locations"][0]["physicalLocation"]["region"]["startColumn"]
+        locations_endColumn = vulnerability["locations"][0]["physicalLocation"]["region"]["endColumn"]
+        isAutofixable = vulnerability["properties"]["isAutofixable"]
+        if score <= 399:
+            severity = "Low"
+        elif score <= 699:
+            severity = "Medium"
+        elif score <= 899:
+            severity = "High"
+        else:
+            severity = "Critical"
+        # create the finding object
+        finding = Finding(
+            title=ruleId + "_" + locations_uri,
+            test=test,
+            severity=severity,
+            description="**ruleId**: " + str(ruleId) + "\n"
+            + "**ruleIndex**: " + str(ruleIndex) + "\n"
+            + "**message**: " + str(message) + "\n"
+            + "**score**: " + str(score) + "\n"
+            + "**uri**: " + locations_uri + "\n"
+            + "**uriBaseId**: " + locations_uriBaseId + "\n"
+            + "**startLine**: " + str(locations_startLine) + "\n"
+            + "**endLine**: " + str(locations_endLine) + "\n"
+            + "**startColumn**: " + str(locations_startColumn) + "\n"
+            + "**endColumn**: " + str(locations_endColumn) + "\n"
+            + "**isAutofixable**: " + str(isAutofixable) + "\n",
+            false_p=False,
+            duplicate=False,
+            out_of_scope=False,
+            static_finding=True,
+            dynamic_finding=False,
+        )
         return finding

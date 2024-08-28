@@ -21,7 +21,7 @@ jobs:
     steps:
       
       - name: Checkout master
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: master
       
@@ -38,15 +38,15 @@ jobs:
         run: git push origin HEAD:${NEW_BRANCH}
       
       - name: Checkout new branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.NEW_BRANCH }}
       
       - name: Update version numbers in key files
         run: |
-          sed -ri "s/__version__ = '.*'/__version__ = '${{ github.event.inputs.release_number_dev }}'/" dojo/__init__.py
-          sed -ri "s/appVersion: \".*\"/appVersion: \"${{ github.event.inputs.release_number_dev }}\"/" helm/defectdojo/Chart.yaml
-          sed -ri "s/\"version\": \".*\"/\"version\": \"${{ github.event.inputs.release_number_dev }}\"/" components/package.json
+          sed -ri 's/__version__ = ".*"/__version__ = "${{ github.event.inputs.release_number_dev }}"/' dojo/__init__.py
+          sed -ri 's/"version": ".*"/"version": "${{ github.event.inputs.release_number_dev }}"/' components/package.json
+          sed -ri 's/appVersion: ".*"/appVersion: "${{ github.event.inputs.release_number_dev }}"/' helm/defectdojo/Chart.yaml
           CURRENT_CHART_VERSION=$(grep -oP 'version: (\K\S*)?' helm/defectdojo/Chart.yaml | head -1)
           sed -ri "0,/version/s/version: \S+/$(echo "version: $CURRENT_CHART_VERSION" | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{$NF=sprintf("%0*d", length($NF), ($NF+1)); print}')-dev/" helm/defectdojo/Chart.yaml
       
@@ -55,9 +55,25 @@ jobs:
           grep version dojo/__init__.py
           grep appVersion helm/defectdojo/Chart.yaml
           grep version components/package.json
-      
+
+      - name: Create upgrade notes to documentation
+        run: |
+          minorv=$(echo ${{ github.event.inputs.release_number_dev }} | cut -d '.' -f -2)
+          patchv=$(echo ${{ github.event.inputs.release_number_dev }} | cut -d '-' -f -1)
+          weight=$(date +%Y%m%d)
+          echo -n "---
+          title: 'Upgrading to DefectDojo Version $minorv.x'
+          toc_hide: true
+          weight: -$weight
+          description: No special instructions.
+          ---
+          There are no special instructions for upgrading to $minorv.x. Check the [Release Notes](https://github.com/DefectDojo/django-DefectDojo/releases/tag/$patchv) for the contents of the release.
+          " > docs/content/en/getting_started/upgrading/$minorv.md
+          git add docs/content/en/getting_started/upgrading/$minorv.md
+        if: endsWith(github.event.inputs.release_number_new, '.0') && endsWith(github.event.inputs.release_number_dev, '.0-dev')
+
       - name: Push version changes
-        uses: stefanzweifel/git-auto-commit-action@v4.16.0
+        uses: stefanzweifel/git-auto-commit-action@v5.0.1
         with:
           commit_user_name: "${{ env.GIT_USERNAME }}"
           commit_user_email: "${{ env.GIT_EMAIL }}"
@@ -70,7 +86,7 @@ jobs:
       - name: Create Pull Request
         env:
           REPO_ORG: ${{ env.repoorg }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -87,7 +103,7 @@ jobs:
     steps:
       
       - name: Checkout master
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: master
       
@@ -104,7 +120,7 @@ jobs:
         run: git push origin HEAD:${NEW_BRANCH}
       
       - name: Checkout new branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.NEW_BRANCH }}
       
@@ -123,7 +139,7 @@ jobs:
           grep version components/package.json
       
       - name: Push version changes
-        uses: stefanzweifel/git-auto-commit-action@v4.16.0
+        uses: stefanzweifel/git-auto-commit-action@v5.0.1
         with:
           commit_user_name: "${{ env.GIT_USERNAME }}"
           commit_user_email: "${{ env.GIT_EMAIL }}"
@@ -136,7 +152,7 @@ jobs:
       - name: Create Pull Request
         env:
           REPO_ORG: ${{ env.repoorg }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

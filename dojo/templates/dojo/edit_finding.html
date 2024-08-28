@@ -46,6 +46,8 @@
                 <input type="hidden" name="return_url" value="{{ return_url }}" />
             {% endif %}
             {% include "dojo/form_fields.html" with form=form %}
+            {% block additional_forms %}
+            {% endblock additional_forms %}
             <span id="original_finding" class="small">
                 {% if finding.duplicate_finding %}
                     [original:
@@ -206,7 +208,7 @@
             if ($("#id_duplicate").prop("checked")) {
                 $("#id_duplicate").parent().parent().append(original_finding)
             } else {
-                $("#id_duplicate").click(function(){ alert('findings can only be marked as duplicates from the view finding screen'); return false; });
+                $("#id_duplicate").click(function(){ alert('findings can only be marked as duplicates from the view finding screen. Similar Findings must be enabled for this operation.'); return false; });
             }
         };
 

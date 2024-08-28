@@ -13,7 +13,7 @@ Extras field separated by commas (e.g. `BUG,VULNERABILITY,CODE_SMELL`). When usi
 SonarCloud, you must also specify the Organization ID in the Extras field as follows
 `OrgID=sonarcloud-organzation-ID`. If also specifying issue type filters, please 
 seperate the items in the Extras field by a vertical bar as follows
-`BUG,VULNERABILITY,CODE_SMEL|OrgID=sonarcloud-organzation-ID`
+`BUG,VULNERABILITY,CODE_SMELL|OrgID=sonarcloud-organzation-ID`
 
 In "Add API Scan Configuration"
 -   `Service key 1` must
@@ -37,7 +37,7 @@ only one defined or the SonarQube `Tool Configuration` if there is only one.
 ## Multi Branch Scanning
 
 If using a version of SonarQube with multi branch scanning, the branch tha be scanned can
-be supplied in the `branch tag` fieild at import/re-import time. If the branch does not exist,
+be supplied in the `branch_tag` fieild at import/re-import time. If the branch does not exist,
 a notification will be generated in the alerts table indicating that branch to be imported
 does not exist. If a branch name is not supplied during import/re-import, the default branch
 of the SonarQube project will be used.

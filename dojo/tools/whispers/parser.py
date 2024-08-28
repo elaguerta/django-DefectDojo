@@ -1,19 +1,26 @@
 import json
 
-from dojo.models import Endpoint, Finding
+from dojo.models import Finding
 
 
-class WhispersParser(object):
+class WhispersParser:
     """
     Identify hardcoded secrets in static structured text
     """
 
     SEVERITY_MAP = {
+        # Whispers 2.1
         "BLOCKER": "Critical",
         "CRITICAL": "High",
         "MAJOR": "Medium",
         "MINOR": "Low",
         "INFO": "Info",
+        # Whispers 2.2
+        "Critical": "Critical",
+        "High": "High",
+        "Medium": "Medium",
+        "Low": "Low",
+        "Info": "Info",
     }
 
     @staticmethod
@@ -52,12 +59,10 @@ class WhispersParser(object):
                         "Supply the new secret through a placeholder to avoid disclosing "
                         "sensitive information in code."
                     ),
-                    references=Endpoint.from_uri(
-                        "https://cwe.mitre.org/data/definitions/798.html"
-                    ),
+                    references="https://cwe.mitre.org/data/definitions/798.html",
                     cwe=798,
                     severity=self.SEVERITY_MAP.get(
-                        vuln.get("severity"), "Info"
+                        vuln.get("severity"), "Info",
                     ),
                     file_path=vuln.get("file"),
                     line=int(vuln.get("line")),
@@ -65,7 +70,7 @@ class WhispersParser(object):
                     static_finding=True,
                     dynamic_finding=False,
                     test=test,
-                )
+                ),
             )
 
         return findings

@@ -8,13 +8,24 @@ weight: 2
 ## Tags
 
 In DefectDojo, tags are a first class citizen and are recognized as the facilitators
-of organization within each level of the [data model](../models.md). Tags are
+of organization within each level of the [data model](../models). Tags are
 ideal for grouping objects in a manner that can be filtered out into smaller, more
 digestible chunks.
 
 Here is an example with a product with two tags and four findings each with a single tag
 
 ![High level example of usage with tags](../../images/tags-high-level-example.png)
+
+#### Format of tag
+
+Tags can be formatted in any of the following ways:
+- StringWithNoSpaces
+- string-with-hyphens
+- string_with_underscores
+- colons:acceptable
+- "quoted string with spaces"
+- "quoted,comma,tag"
+- "quoted with spaces, and also commas!"
 
 ### Adding and Removing
 
@@ -377,8 +388,6 @@ details about the deduplication process : switch
 
 ### Deduplication - APIv2 parameters
 
-- `skip_duplicates`: if true, duplicates are not
-    inserted at all
 - `close_old_findings` : if true, findings that are not
     duplicates and that were in the previous scan of the same type
     (example ZAP) for the same engagement (or product in case of
@@ -414,14 +423,15 @@ Similar Findings
 DefectDojo allows you to maintain your security SLAs and automatically
 remind teams whenever a SLA is about to get breached, or is breached.
 
-Simply indicate in the `System Settings` for each severity, how many
-days teams have to remediate a finding.
+To apply SLAs to Findings, open the `System Settings` page and check 'Enable Finding SLAs'.
 
-![SLA configuration screen](../../images/sla_global_settings.png)
+You will then need to create one or more SLA Configurations, from the SLA Configuration menu (your-defectdojo.com/sla_config).  
+
+![SLA configuration screen](../../images/sla_settings.png)
 
 ### SLA notification configuration
 
-There are 3 variables in the system settings that can be set for notifcations of SLA breaches.
+There are 3 variables in the system settings that can be set for notifications of SLA breaches.
 By default notifications are disabled.
 You can either choose to notify about breaches for findings that are only in 'Active' or
 for any findings across the instance that are in `Active, Verified`.
@@ -528,7 +538,7 @@ Custom reports, generated with the Report Builder, allow you to select specific 
 5.  Vulnerable Endpoints
 6.  Page Breaks
 
-DefectDojo's reports can be generated in HTML and AsciiDoc.
+DefectDojo's reports can be generated in HTML.
 
 ## Metrics
 
@@ -556,6 +566,9 @@ Product Type Counts
     stakeholders as it is a snapshot in time of the product.
 
     ![Product Type Counts](../../images/met_2.png)
+
+Product Tag Counts
+:   Same as above, but for a group of products sharing a tag.
 
 Simple Metrics
 :   Provides tabular data for all Product Types. The data displayed in
@@ -671,3 +684,12 @@ feedback.internal.google.com (endpoint) -> [ team:human resources, public_facing
 Endpoint Meta Importer can be found in the Endpoint tab when viewing a Product
 
 **Note:** The field "hostname" is required as it is used to query/create endpoints.
+
+## Findings Image Upload
+
+You can add images (.png, .jpeg, .gif) to your findings. In order to achieve this, you have to click on "Manage Files" within the finding:
+![Manage Files](../../images/findings_manage_files.png)
+There, you can upload a png file to attach it to a finding:
+![Upload PNG File](../../images/file_upload.png)
+The following picture shows the result:
+![Result PNG File in finding](../../images/uploaded_png_to_finding.png)

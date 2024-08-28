@@ -30,43 +30,18 @@ When running the application without building images, the application will run b
     *  https://hub.docker.com/r/defectdojo/defectdojo-nginx
 
 
-# Setup via Docker Compose - Profiles
-
-## Parameters to start docker-compose
-
-The Docker Compose setup supports 2 different databases (MySQL and PostgreSQL) and 2 different celery brokers (RabbitMQ and Redis). To make this possible, docker-compose needs to be started with the parameter `--profile` with one of these choices:
-
-- mysql-rabbitmq*
-- mysql-redis
-- postgres-rabbitmq
-- postgres-redis
-
-e.g. 
-```zsh
-./dc-up.sh mysql-redis
-```
-
-A default profile can be set with the environment variable `DD_PROFILE`. If this environment variable is set when starting the containers, the parameter for the profile needs not to be given for the start scripts.
-
-When DD_PROFILE or command-line profile is not specified, the command will run "mysql-rabbitmq" as the default profile. 
-
-The environment variables needed for the different profiles are prepared in files, which need to be included additionally with the parameter `--env-file` with a choices that fits to the profile:
-
-- ./docker/environments/mysql-rabbitmq.env
-- ./docker/environments/mysql-redis.env
-- ./docker/environments/postgres-rabbitmq.env
-- ./docker/environments/postgres-redis.env
+# Setup via Docker Compose
 
 ## Scripts
 
 6 shell scripts make life easier and avoid typing long commands:
 
 - `./dc-build.sh` - Build the docker images, it can take one additional parameter to be used in the build process, e.g. `./dc-build.sh --no-cache`.
-- `./dc-up.sh` - Start the docker containers in the foreground, it needs one of the profile names as a parameter, e.g. `./dc-up.sh postgres-redis`.
-- `./dc-up-d.sh` - Start the docker containers in the background, it needs one of the profile names as a parameter, e.g. `./dc-up-d.sh mysql-rabbitmq`
+- `./dc-up.sh` - Start the docker containers in the foreground.
+- `./dc-up-d.sh` - Start the docker containers in the background.
 - `./dc-stop.sh` - Stop the docker containers, it can take one additional parameter to be used in the stop process.
 - `./dc-down.sh` - Stop and remove the docker containers, it can take one additional parameter to be used in the stop and remove process.
-- `./dc-unittest.sh` - Utility script to aid in running a specific unit test class.  Requires a profile and test case as parameters.
+- `./dc-unittest.sh` - Utility script to aid in running a specific unit test class.
 
 
 # Setup via Docker Compose - Building and running the application
@@ -97,7 +72,7 @@ To run the application based on previously built image (or based on dockerhub im
 
 ```zsh
 docker/setEnv.sh release
-./dc-up.sh postgres-redis # or an other profile
+./dc-up.sh
 ```
 
 This will run the application based on docker-compose.yml only.
@@ -112,7 +87,7 @@ For development, use:
 ```zsh
 docker/setEnv.sh dev
 ./dc-build.sh
-./dc-up.sh postgres-redis # or an other profile
+./dc-up.sh
 ```
 
 This will run the application based on merged configurations from docker-compose.yml and docker-compose.override.dev.yml.
@@ -128,7 +103,7 @@ This will run the application based on merged configurations from docker-compose
 docker-compose restart celeryworker
 ```
 
-*  The mysql port is forwarded to the host so that you can access your database from outside the container.
+*  The postgres port is forwarded to the host so that you can access your database from outside the container.
 
 To update changes in static resources, served by nginx, just refresh the browser with ctrl + F5.
 
@@ -322,7 +297,7 @@ The default https port is 8443.
 
 To change the port:
 - update `nginx.conf`
-- update `docker-compose.override.https.yml` or set DD_PORT in the environment)
+- update `docker-compose.override.https.yml` or set DD_TLS_PORT in the environment)
 - restart the application
 
 NB: some third party software may require to change the exposed port in Dockerfile.nginx as they use docker-compose declarations to discover which ports to map when publishing the application.
@@ -335,16 +310,26 @@ The integration-tests are under `tests`
 
 
 ## Running the unit tests
+
+### All tests
 This will run all unit-tests and leave the uwsgi container up:
 
 ```
 docker/setEnv.sh unit_tests
 ./dc-up.sh
 ```
-Enter the container to run more tests:
 
+### Limited tests
+If you want to enter the container to run more tests or a single test case, leave setEnv in normal or dev mode:
 ```
-docker-compose exec uwsgi bash
+docker/setEnv.sh dev
+./dc-up.sh
+```
+Then 
+```
+docker ps
+#find the name of the uwsgi container from the above command
+docker exec -ti [container-name] bash
 ```
 Rerun all the tests:
 
@@ -365,10 +350,10 @@ python manage.py test unittests.tools.test_dependency_check_parser.TestDependenc
 ```
 
 For docker compose stack, there is a convenience script (`dc-unittest.sh`) capable of running a single test class. 
-You will need to provide a docker compose profile (`--profile`), and a test case (`--test-case`). Example:
+You will need to provide a test case (`--test-case`). Example:
 
 ```
-./dc-unittest.sh --profile mysql-rabbitmq --test-case unittests.tools.test_stackhawk_parser.TestStackHawkParser
+./dc-unittest.sh --test-case unittests.tools.test_stackhawk_parser.TestStackHawkParser
 ```
 
 ## Running the integration tests
@@ -418,9 +403,7 @@ OpenSSL version: OpenSSL 1.0.1t  3 May 2016
 
 In this case, both docker (version 17.09.0-ce) and docker-compose (1.18.0) need to be updated.
 
-**NOTE** - Docker Compose version 2.19.0 and greater includes syntax restrictions that are not compatible with our compose files.  As a temporary workaround while a more complete solution is determined, please do not update docker compose to a version greater than 2.18.1.
-
-Follow [Dockers' documentation](https://docs.docker.com/install/) for your OS to get the latest version of Docker* (see above Note). For the docker command, most OSes have a built-in update mechanism like "apt upgrade".
+Follow [Docker's documentation](https://docs.docker.com/install/) for your OS to get the latest version of Docker. For the docker command, most OSes have a built-in update mechanism like "apt upgrade".
 
 Docker Compose isn't packaged like Docker and you'll need to manually update an existing install if using Linux. For Linux, either follow the instructions in the [Docker Compose documentation](https://docs.docker.com/compose/install/) or use the shell script below. The script below will update docker-compose to the latest version automatically. You will need to make the script executable and have sudo privileges to upgrade docker-compose:
 

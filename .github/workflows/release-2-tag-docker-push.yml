@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: master
 
@@ -45,4 +45,11 @@ jobs:
     uses: ./.github/workflows/release-x-manual-docker-containers.yml
     with:
       release_number: ${{ github.event.inputs.release_number }}
+    secrets: inherit
+
+  release-drafter:
+    needs: release-docker-containers
+    uses: ./.github/workflows/release-drafter.yml
+    with:
+      version: ${{ github.event.inputs.release_number }}
     secrets: inherit
